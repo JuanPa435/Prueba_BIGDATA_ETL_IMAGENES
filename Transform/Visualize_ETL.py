@@ -43,28 +43,55 @@ def run_visualizations(df):
     # 2) Número de noticias por año
     df['year'] = df['date'].dt.year
     year_counts = df.groupby('year').size()
-    plt.figure(figsize=(7,4))
-    plt.bar(year_counts.index.astype(str), year_counts.values, color='#42a5f5')
+    plt.figure(figsize=(10,5))
+    bars = plt.bar(year_counts.index.astype(str), year_counts.values, color='#42a5f5')
     plt.title('Número de noticias por año')
     plt.xlabel('Año')
     plt.ylabel('Cantidad')
+    # Rotar etiquetas y mejorar legibilidad
+    plt.xticks(rotation=90)
+    plt.gca().tick_params(axis='x', labelsize=9)
+    # Si hay muchas barras, mostrar solo un tick cada N años para evitar solapamiento
+    n_ticks = len(year_counts)
+    if n_ticks > 15:
+        step = max(1, n_ticks // 12)
+        ticks = list(range(0, n_ticks, step))
+        plt.gca().set_xticks([i for i in ticks])
+        plt.gca().set_xticklabels([year_counts.index.astype(str)[i] for i in ticks], rotation=90)
+
     plt.tight_layout()
     plt.savefig(os.path.join(PLOTS_DIR, 'basic_2_news_by_year.png'))
     plt.close()
 
-    # 3) Promedio de Label por mes (agregado sobre todo el periodo)
+    # 3) Heatmap año x mes: proporción de Label=1 (más informativo)
+    df['year'] = df['date'].dt.year
     df['month'] = df['date'].dt.month
-    month_mean = df.groupby('month')['label'].mean()
-    plt.figure(figsize=(8,4))
-    plt.plot(month_mean.index, month_mean.values, marker='o', color='#ffa726')
-    plt.xticks(range(1,13))
-    plt.title('Promedio de Label por mes (todas las fechas)')
-    plt.xlabel('Mes')
-    plt.ylabel('Promedio Label')
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(os.path.join(PLOTS_DIR, 'basic_3_label_mean_by_month.png'))
-    plt.close()
+    pivot = df.pivot_table(index='year', columns='month', values='label', aggfunc='mean')
+
+    # intentar usar seaborn para el heatmap; si no está, usar imshow
+    try:
+        import seaborn as sns
+        plt.figure(figsize=(12,6))
+        sns.heatmap(pivot, annot=True, fmt='.2f', cmap='YlGnBu', cbar_kws={'label': 'Proporción Label=1'})
+        plt.title('Heatmap: proporción de Label=1 por Año y Mes')
+        plt.xlabel('Mes')
+        plt.ylabel('Año')
+        plt.tight_layout()
+        plt.savefig(os.path.join(PLOTS_DIR, 'basic_3_label_heatmap.png'))
+        plt.close()
+    except Exception:
+        # fallback simple
+        plt.figure(figsize=(12,6))
+        plt.imshow(pivot.fillna(0).values, aspect='auto', cmap='YlGnBu')
+        plt.colorbar(label='Proporción Label=1')
+        plt.yticks(range(len(pivot.index)), pivot.index)
+        plt.xticks(range(12), range(1,13))
+        plt.title('Heatmap (fallback) proporción de Label=1 por Año y Mes')
+        plt.xlabel('Mes')
+        plt.ylabel('Año')
+        plt.tight_layout()
+        plt.savefig(os.path.join(PLOTS_DIR, 'basic_3_label_heatmap.png'))
+        plt.close()
 
     # 4) Histograma de longitud de 'top1' en palabras
     if 'top1' in df.columns:
