@@ -28,7 +28,7 @@ Si quieres instalar las dependencias recomendadas:
 pip install -r requirements_clean.txt
 ```
 
-> Nota: `requirements.txt` en el repo puede contener formato original; `requirements_clean.txt` incluye una lista normalizada.
+> Nota: `requirements.txt` en el repo puede contener formato original,incluye una lista normalizada.
 
 ## Estructura del proyecto
 ```
