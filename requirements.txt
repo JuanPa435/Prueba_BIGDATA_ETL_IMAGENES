@@ -4,4 +4,10 @@ pymysql
 python-dotenv
 chardet
 requests
+numpy
 matplotlib
+seaborn
+scikit-learn
+wordcloud
+nltk   # opcional: para stopwords y tokenización avanzada
+spacy  # opcional: para lematización (si la necesitas)

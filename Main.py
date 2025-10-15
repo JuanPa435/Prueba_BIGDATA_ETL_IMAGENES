@@ -13,7 +13,10 @@ def main():
     load_to_sqlite(df_clean)
 
     # EDA
-    run_visualizations(df_clean)
+    try:
+        run_visualizations(df_clean)
+    except Exception as e:
+        print(f"Advertencia: no se pudieron generar las visualizaciones: {e}")
 
     print("=====COMPLETADO CON ÉXITO =====")
 
